@@ -1,5 +1,6 @@
 var express= require('express');
 var app = express();
+// Similar to require('http').createServer(app)
 var server = require('http').Server(app);
 var io =  require('socket.io').listen(server);
 var players = {};
@@ -15,6 +16,7 @@ var star = {
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res) {
+	console.log(__dirname+ 'When is this being callled?')
 	res.sendFile(__dirname + '/index.html');
 });
 
@@ -68,6 +70,7 @@ io.on('connection', function(socket) {
 	});
 });
 
+// The first argument denotes the port to listen to
 server.listen(3000, function () {
 	console.log(`Listening on ${server.address().port}`);
 });
