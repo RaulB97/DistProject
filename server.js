@@ -23,40 +23,37 @@ app.get('/', function (req, res) {
 	res.sendFile(__dirname + '/index.html');
 });
 
-function addPlayer(socket) {
+function addNewPlayer(socket) {
 	players[socket.id] = {
 		rotation: 0,
-		x: Math.floor(Math.random() * 700) + 50,
-		y: Math.floor(Math.random() * 500) + 50,
+		x: 50,
+		y: 550,
 		playerId: socket.id,
 		team: (playerCount % 2 == 0) ? 'red' : 'blue'
 	}
 	playerCount += 1;
+	console.log(players[socket.id])
 }
 
+// Sends the player, star location, and current score to new player.
 function updatePlayer(socket) {
-	// send the players object to the new player
 	socket.emit('currentPlayers', players)
-	// send the star object to the new player
 	socket.emit('starLocation', star)
-	// send the current scores
 	socket.emit('scoreUpdate', scores)
 }
 
+// Deletes the player object and informs other players to remove the player
+//  from their game session. 
 function removePlayer(socket) {
-	console.log('user disconnected')
-	// remove this player from our players object
+	console.log('userID: ' + socket.id +  ' disconnected')
 	delete players[socket.id]
-	// emit a message to all players to remove this player
 	io.emit('disconnect', socket.id)
 }
 
+/*MAIN*************************************************************************/
 // Each socket is an individual player.
 io.on('connection', function (socket) {
-	console.log('Player connected')
-	console.log("ID: " + socket.id)
-
-	addPlayer(socket)
+	addNewPlayer(socket)
 	updatePlayer(socket)
 
 	// update all other players of the new player
@@ -86,7 +83,7 @@ io.on('connection', function (socket) {
 		io.emit('scoreUpdate', scores);
 	})
 })
-
+/*MAIN*END*********************************************************************/
 // The first argument denotes the port to listen to
 server.listen(3000, function () {
 	console.log(`Listening on ${server.address().port}`);
