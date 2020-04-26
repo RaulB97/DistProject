@@ -23,9 +23,12 @@ function preload() {
 	this.load.image('ship', 'assets/spaceShips_001.png');
 	this.load.image('otherPlayer', 'assets/enemyBlack5.png');
 	this.load.image('star', 'assets/star_gold.png');
+	this.load.image('background', 'assets/back.jpg');
 }
  
 function create() {
+
+	this.add.image(400,300,'background');
 	var self = this;
 	this.socket = io();
 	this.otherPlayers = this.physics.add.group();
@@ -81,14 +84,18 @@ function update() {
 	if (this.ship) {
 		if (this.cursors.left.isDown) {
 			this.ship.setAngularVelocity(-150);
+			//this.ship.setVelocityX(-150);
 		} else if (this.cursors.right.isDown) {
 			this.ship.setAngularVelocity(150);
+			//this.ship.setVelocityX(150);
 		} else {
 			this.ship.setAngularVelocity(0);
+			//this.ship.setVelocityX(0);
 		}
 
 		if (this.cursors.up.isDown) {
 			this.physics.velocityFromRotation(this.ship.rotation + 1.5, 100, this.ship.body.acceleration);
+			//this.ship.setAccelerationY(-150);
 		} else {
 			this.ship.setAcceleration(0);
 		}
