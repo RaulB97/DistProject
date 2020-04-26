@@ -6,8 +6,8 @@ var config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: false,
-      gravity: { y: 0 }
+      debug: true,
+      //gravity: { y: 0 }
     }
   },
   scene: {
@@ -27,7 +27,8 @@ function preload() {
 }
  
 function create() {
-    var self = this;
+	let playah = this.physics.add.sprite(20,0, "ship");
+	playah.setGravityY(20);
 	this.add.image(400,300,'background');
 	var self = this;
 	this.socket = io();
@@ -99,10 +100,11 @@ function update() {
         } else if(this.cursors.down.isDown){ 
             this.ship.setVelocityY(160);
         } else {
-			this.ship.setAcceleration(0);
+			//this.ship.setAcceleration(0);
+			this.ship.setVelocityY(0);
 		}
         //	this.physics.world.wrap(this.ship, 5); 
-		
+
 		// emit player movement
 		var x = this.ship.x;
 		var y = this.ship.y;
@@ -121,18 +123,21 @@ function update() {
 }
 
 function addPlayer(self, playerInfo) {
-	self.ship = self.physics.add.image(playerInfo.x, playerInfo.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+	//self.ship = self.physics.add.image(playerInfo.x, playerInfo.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+	self.ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40).setGravityY(1500);
 	if (playerInfo.team === 'blue') {
 		self.ship.setTint(0x0000ff);
 	} else {
 		self.ship.setTint(0xff0000);
 	}
-	self.ship.setDrag(100);
-	self.ship.setAngularDrag(100);
+	//self.ship.setDrag(100);
+	//self.ship.setAngularDrag(100);
     self.ship.setMaxVelocity(200);
     self.ship.body.setCollideWorldBounds(true);
-    self.ship.onWorldBounds=true;
-    self.ship.setBounce(0.1,0.1);
+	self.ship.onWorldBounds=true;
+	//self.ship.setBounce(0.1,0.1);
+	//self.ship.physics.body.setGravityY(50);
+
 }
 
 function addOtherPlayers(self, playerInfo) {
