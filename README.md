@@ -1,2 +1,3 @@
 # Multiplayer Puzzle-ish Game
-# to run, do "node server.js".
+`npm install` to download dependencies. Use when node_modules is deleted.  
+`node server.js` to run game.
