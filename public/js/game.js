@@ -26,7 +26,7 @@ function preload() {
 }
  
 function create() {
-	var self = this;
+    var self = this;
 	this.socket = io();
 	this.otherPlayers = this.physics.add.group();
 	this.socket.on('currentPlayers', function (players) {
@@ -79,20 +79,26 @@ function create() {
 
 function update() {
 	if (this.ship) {
-		if (this.cursors.left.isDown) {
-			this.ship.setAngularVelocity(-150);
+        if (this.cursors.left.isDown) {
+            // this.ship.setAngularVelocity(-150);
+            this.ship.setVelocityX(-160);
 		} else if (this.cursors.right.isDown) {
-			this.ship.setAngularVelocity(150);
+            //this.ship.setAngularVelocity(150);
+            this.ship.setVelocityX(160);
 		} else {
-			this.ship.setAngularVelocity(0);
+            //this.ship.setAngularVelocity(0);
+            this.ship.setVelocityX(0);
 		}
 
 		if (this.cursors.up.isDown) {
-			this.physics.velocityFromRotation(this.ship.rotation + 1.5, 100, this.ship.body.acceleration);
-		} else {
+            //this.physics.velocityFromRotation(this.ship.rotation + 1.5, 100, this.ship.body.acceleration);
+            this.ship.setVelocityY(-160);
+        } else if(this.cursors.down.isDown){ 
+            this.ship.setVelocityY(160);
+        } else {
 			this.ship.setAcceleration(0);
 		}
-		//this.physics.world.wrap(this.ship, 5); 
+        //	this.physics.world.wrap(this.ship, 5); 
 		
 		// emit player movement
 		var x = this.ship.x;
@@ -120,7 +126,10 @@ function addPlayer(self, playerInfo) {
 	}
 	self.ship.setDrag(100);
 	self.ship.setAngularDrag(100);
-	self.ship.setMaxVelocity(200);
+    self.ship.setMaxVelocity(200);
+    self.ship.body.setCollideWorldBounds(true);
+    self.ship.onWorldBounds=true;
+    self.ship.setBounce(0.1,0.1);
 }
 
 function addOtherPlayers(self, playerInfo) {
