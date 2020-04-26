@@ -1,3 +1,4 @@
+// Comment for the culture.
 var express= require('express');
 var app = express()
 // Similar(?) to require('http').createServer(app)
