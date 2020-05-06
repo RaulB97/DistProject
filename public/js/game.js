@@ -6,15 +6,15 @@ var config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: false,
-      gravity: { y: 0 }
+      debug: true,
+      //gravity: { y: 0 }
     }
   },
   scene: {
     preload: preload,
     create: create,
     update: update
-  } 
+  }
 };
  
 var platform;
@@ -27,14 +27,22 @@ function preload() {
 	this.load.image('background', 'assets/back.jpg');
 	this.load.image('block', 'assets/default.png');
 	this.load.spritesheet('ship', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+	this.load.spritesheet("hero", "assets/spritesheets/hero.png", {
+		frameWidth: 19,
+		frameHeight: 34
+	})
 }
  
+// Used to create game objects.
 function create() {
-    var self = this;
+	//let playah = this.physics.add.sprite(20,0, "ship");
+	//playah.setGravityY(20);
 	this.add.image(400,300,'background');
+	// self is used to pass this into functions. Due to scope concerns?
 	var self = this;
 	this.socket = io();
 	this.platform = this.physics.add.group();
+	// Does group() create an 'array' type structure?
 	this.otherPlayers = this.physics.add.group();
 	this.socket.on('currentPlayers', function (players) {
 		Object.keys(players).forEach(function (id) {
@@ -77,7 +85,7 @@ function create() {
 	this.socket.on('starLocation', function (starLocation) {
 		if (self.star) self.star.destroy();
 		self.star = self.physics.add.image(starLocation.x, starLocation.y, 'star');
-		self.physics.add.overlap(self.ship, self.star, function () {
+		self.physics.add.overlap(self.hero, self.star, function () {
 		  this.socket.emit('starCollected');
 		}, null, self);
 	});
@@ -90,19 +98,16 @@ function create() {
 
 
 function update() {
-	if (this.ship) {
+	if (this.hero) {
         if (this.cursors.left.isDown) {
             // this.ship.setAngularVelocity(-150);
-			this.ship.setVelocityX(-160);
-			//this.ship.anims.play('left', true);//az
+            this.hero.setVelocityX(-160);
 		} else if (this.cursors.right.isDown) {
             //this.ship.setAngularVelocity(150);
-			this.ship.setVelocityX(160);
-			//this.ship.anims.play('right', true);//az
+            this.hero.setVelocityX(160);
 		} else {
             //this.ship.setAngularVelocity(0);
-			this.ship.setVelocityX(0);
-			//this.ship.anims.play('turn');//az
+            this.hero.setVelocityX(0);
 		}
 
         /*if (this.cursors.up.isDown && this.ship.body.touching.down)
@@ -112,80 +117,55 @@ function update() {
 
 		if (this.cursors.up.isDown) {
             //this.physics.velocityFromRotation(this.ship.rotation + 1.5, 100, this.ship.body.acceleration);
-            this.ship.setVelocityY(-160);
+            this.hero.setVelocityY(-160);
         } else if(this.cursors.down.isDown){ 
-            this.ship.setVelocityY(160);
+            this.hero.setVelocityY(160);
         } else {
-			this.ship.setAcceleration(0);
-			//
-			//this.ship.setVelocityY(0);
-			//
+			this.hero.setAcceleration(0);
 		}
         //	this.physics.world.wrap(this.ship, 5); 
 
 		// emit player movement
-		var x = this.ship.x;
-		var y = this.ship.y;
-		var r = this.ship.rotation;
-		if (this.ship.oldPosition && (x !== this.ship.oldPosition.x || y !== this.ship.oldPosition.y || r !== this.ship.oldPosition.rotation)) {
-			this.socket.emit('playerMovement', { x: this.ship.x, y: this.ship.y, rotation: this.ship.rotation });
+		var x = this.hero.x;
+		var y = this.hero.y;
+		var r = this.hero.rotation;
+		if (this.hero.oldPosition && (x !== this.hero.oldPosition.x || y !== this.hero.oldPosition.y || r !== this.hero.oldPosition.rotation)) {
+			this.socket.emit('playerMovement', { x: this.hero.x, y: this.hero.y, rotation: this.hero.rotation });
 		}
 
 		// save old position data
-		this.ship.oldPosition = {
-			x: this.ship.x,
-			y: this.ship.y,
-			rotation: this.ship.rotation
+		this.hero.oldPosition = {
+			x: this.hero.x,
+			y: this.hero.y,
+			rotation: this.hero.rotation
 		};
 	}
 }
 
 function addPlayer(self, playerInfo) {
-	//self.ship = self.physics.add.image(playerInfo.x, playerInfo.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-	self.ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-	self.ship.setBounce(0.2);
-	//self.ship.setCollideWorldBounds(true);
-
+	// Make sure setDisplaySize matches sprite size.
+	self.hero= self.physics.add.sprite(playerInfo.x, playerInfo.y, 'hero').setOrigin(0.5, 0.5).setDisplaySize(19, 34);
 	if (playerInfo.team === 'blue') {
-		self.ship.setTint(0x0000ff);
+		self.hero.setTint(0x0000ff);
 	} else {
-		self.ship.setTint(0xff0000);
+		self.hero.setTint(0xff0000);
 	}
-	self.ship.setDrag(100);
-	self.ship.setAngularDrag(100);
-    //self.ship.setMaxVelocity(200);
-    self.ship.body.setCollideWorldBounds(true);
-    self.ship.onWorldBounds=true;
-	//self.ship.setBounce(0.1,0.1);
-	//self.platform = self.physics.add.staticGroup();
-	self.platform.create(400, 568, 'block').setScale(2).refreshBody();//center, a lil higher, block//scale by 2x block will now be 114x114
-	//hmm, causes problems
-
-	self.ship.anims.create({
-		key: 'left',
-		frames: self.ship.anims.generateFrameNumbers('ship', { start: 0, end: 3 }),
-		frameRate: 10,
-		repeat: -1
-	});
-
-	self.ship.anims.create({
-		key: 'turn',
-		frames: [ { key: 'ship', frame: 4 } ],
-		frameRate: 20
-	});
-
-	self.ship.anims.create({
-		key: 'right',
-		frames: self.ship.anims.generateFrameNumbers('ship', { start: 5, end: 8 }),
-		frameRate: 10,
-		repeat: -1
-	});
-
-	self.ship.physics.add.collider(self.ship, self.platform);
+	self.hero.setDrag(100);
+	self.hero.setAngularDrag(100);
+    self.hero.setMaxVelocity(200);
+    self.hero.body.setCollideWorldBounds(true);
+    self.hero.onWorldBounds=true;
+    self.hero.setBounce(0.1,0.1);
 }
 
 function addOtherPlayers(self, playerInfo) {
 	const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+	this.anims.create({
+		key: "hero_anim",
+		frames: this.anims.generateFrameNumbers("hero"),
+		frameRate: 60,
+		repeat: -1
+	})
 	if (playerInfo.team === 'blue') {
 		otherPlayer.setTint(0x0000ff);
 	} else {
