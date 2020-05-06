@@ -6,8 +6,8 @@ var config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: false,
-      gravity: { y: 0 }
+      debug: true,
+      //gravity: { y: 0 }
     }
   },
   scene: {
@@ -32,7 +32,8 @@ function preload() {
  
 // Used to create game objects.
 function create() {
-    var self = this;
+	//let playah = this.physics.add.sprite(20,0, "ship");
+	//playah.setGravityY(20);
 	this.add.image(400,300,'background');
 	// self is used to pass this into functions. Due to scope concerns?
 	var self = this;
@@ -109,7 +110,7 @@ function update() {
 			this.hero.setAcceleration(0);
 		}
         //	this.physics.world.wrap(this.ship, 5); 
-		
+
 		// emit player movement
 		var x = this.hero.x;
 		var y = this.hero.y;
