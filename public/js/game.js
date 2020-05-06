@@ -17,6 +17,7 @@ var config = {
   } 
 };
  
+var platform;
 var game = new Phaser.Game(config);
  
 function preload() {
@@ -24,6 +25,8 @@ function preload() {
 	this.load.image('otherPlayer', 'assets/enemyBlack5.png');
 	this.load.image('star', 'assets/star_gold.png');
 	this.load.image('background', 'assets/back.jpg');
+	this.load.image('block', 'assets/default.png');
+	this.load.spritesheet('ship', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
 }
  
 function create() {
@@ -31,6 +34,7 @@ function create() {
 	this.add.image(400,300,'background');
 	var self = this;
 	this.socket = io();
+	this.platform = this.physics.add.group();
 	this.otherPlayers = this.physics.add.group();
 	this.socket.on('currentPlayers', function (players) {
 		Object.keys(players).forEach(function (id) {
@@ -77,6 +81,11 @@ function create() {
 		  this.socket.emit('starCollected');
 		}, null, self);
 	});
+
+	//platform = this.physics.add.staticGroup();
+	//this.platform.create(400, 568, 'block').setScale(2).refreshBody();//center, a lil higher, block//scale by 2x block will now be 114x114
+	//hmm, causes problems
+	//self.ship.physics.add.collider(self.ship, self.platform);
 }
 
 
@@ -84,14 +93,22 @@ function update() {
 	if (this.ship) {
         if (this.cursors.left.isDown) {
             // this.ship.setAngularVelocity(-150);
-            this.ship.setVelocityX(-160);
+			this.ship.setVelocityX(-160);
+			//this.ship.anims.play('left', true);//az
 		} else if (this.cursors.right.isDown) {
             //this.ship.setAngularVelocity(150);
-            this.ship.setVelocityX(160);
+			this.ship.setVelocityX(160);
+			//this.ship.anims.play('right', true);//az
 		} else {
             //this.ship.setAngularVelocity(0);
-            this.ship.setVelocityX(0);
+			this.ship.setVelocityX(0);
+			//this.ship.anims.play('turn');//az
 		}
+
+        /*if (this.cursors.up.isDown && this.ship.body.touching.down)
+        {
+            this.ship.setVelocityY(-330);
+        }*/
 
 		if (this.cursors.up.isDown) {
             //this.physics.velocityFromRotation(this.ship.rotation + 1.5, 100, this.ship.body.acceleration);
@@ -100,9 +117,12 @@ function update() {
             this.ship.setVelocityY(160);
         } else {
 			this.ship.setAcceleration(0);
+			//
+			//this.ship.setVelocityY(0);
+			//
 		}
         //	this.physics.world.wrap(this.ship, 5); 
-		
+
 		// emit player movement
 		var x = this.ship.x;
 		var y = this.ship.y;
@@ -121,7 +141,11 @@ function update() {
 }
 
 function addPlayer(self, playerInfo) {
-	self.ship = self.physics.add.image(playerInfo.x, playerInfo.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+	//self.ship = self.physics.add.image(playerInfo.x, playerInfo.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+	self.ship = self.physics.add.sprite(playerInfo.x, playerInfo.y, 'ship').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+	self.ship.setBounce(0.2);
+	//self.ship.setCollideWorldBounds(true);
+
 	if (playerInfo.team === 'blue') {
 		self.ship.setTint(0x0000ff);
 	} else {
@@ -129,10 +153,35 @@ function addPlayer(self, playerInfo) {
 	}
 	self.ship.setDrag(100);
 	self.ship.setAngularDrag(100);
-    self.ship.setMaxVelocity(200);
+    //self.ship.setMaxVelocity(200);
     self.ship.body.setCollideWorldBounds(true);
     self.ship.onWorldBounds=true;
-    self.ship.setBounce(0.1,0.1);
+	//self.ship.setBounce(0.1,0.1);
+	//self.platform = self.physics.add.staticGroup();
+	self.platform.create(400, 568, 'block').setScale(2).refreshBody();//center, a lil higher, block//scale by 2x block will now be 114x114
+	//hmm, causes problems
+
+	self.ship.anims.create({
+		key: 'left',
+		frames: self.ship.anims.generateFrameNumbers('ship', { start: 0, end: 3 }),
+		frameRate: 10,
+		repeat: -1
+	});
+
+	self.ship.anims.create({
+		key: 'turn',
+		frames: [ { key: 'ship', frame: 4 } ],
+		frameRate: 20
+	});
+
+	self.ship.anims.create({
+		key: 'right',
+		frames: self.ship.anims.generateFrameNumbers('ship', { start: 5, end: 8 }),
+		frameRate: 10,
+		repeat: -1
+	});
+
+	self.ship.physics.add.collider(self.ship, self.platform);
 }
 
 function addOtherPlayers(self, playerInfo) {
