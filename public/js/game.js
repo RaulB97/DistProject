@@ -27,8 +27,8 @@ function preload() {
 }
  
 function create() {
-	let playah = this.physics.add.sprite(20,0, "ship");
-	playah.setGravityY(20);
+	//let playah = this.physics.add.sprite(20,0, "ship");
+	//playah.setGravityY(20);
 	this.add.image(400,300,'background');
 	var self = this;
 	this.socket = io();
