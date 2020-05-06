@@ -1,10 +1,8 @@
-// Comment for the culture.
-// One more test comment.
 var express= require('express');
 var app = express()
-// Similar(?) to require('http').createServer(app)
 var server = require('http').Server(app)
 var io = require('socket.io').listen(server)
+
 var players = {}
 var star = {
 	x: Math.floor(Math.random() * 700) + 50,
@@ -17,44 +15,27 @@ var scores = {
 var playerCount = 0;
 
 app.use(express.static(__dirname + '/public'));
-
 app.get('/', function (req, res) {
-	console.log(__dirname + 'When is this being callled?')
 	res.sendFile(__dirname + '/index.html');
 });
+const port = 3000
+server.listen(port, function () {
+	console.log(`Listening on ${server.address().port}`);
+})
 
-function addNewPlayer(socket) {
-	players[socket.id] = {
-		rotation: 0,
-		x: 50,
-		y: 550,
-		playerId: socket.id,
-		team: (playerCount % 2 == 0) ? 'red' : 'blue'
-	}
-	playerCount += 1;
-	console.log(players[socket.id])
-}
+process.on('SIGINT', () => {
+	console.log("\nExiting server.")
+	process.exit(1)
+})
 
-// Sends the player, star location, and current score to new player.
-function updatePlayer(socket) {
-	socket.emit('currentPlayers', players)
-	socket.emit('starLocation', star)
-	socket.emit('scoreUpdate', scores)
-}
-
-// Deletes the player object and informs other players to remove the player
-//  from their game session. 
-function removePlayer(socket) {
-	console.log('userID: ' + socket.id +  ' disconnected')
-	delete players[socket.id]
-	io.emit('disconnect', socket.id)
-}
 
 /*MAIN*************************************************************************/
 // Each socket is an individual player.
+// With the exception of on() calls to connection and disconnect, all other
+//  on() and emit() calls are a back and forth between server.js and game.js
 io.on('connection', function (socket) {
 	addNewPlayer(socket)
-	updatePlayer(socket)
+	updateNewPlayer(socket)
 
 	// update all other players of the new player
 	socket.broadcast.emit('newPlayer', players[socket.id])
@@ -84,7 +65,30 @@ io.on('connection', function (socket) {
 	})
 })
 /*MAIN*END*********************************************************************/
-// The first argument denotes the port to listen to
-server.listen(3000, function () {
-	console.log(`Listening on ${server.address().port}`);
-})
+
+function addNewPlayer(socket) {
+	players[socket.id] = {
+		rotation: 0,
+		x: 50,
+		y: 550,
+		playerId: socket.id,
+		team: (playerCount % 2 == 0) ? 'red' : 'blue'
+	}
+	playerCount += 1;
+	console.log(players[socket.id])
+}
+
+// Sends the player, star location, and current score to new player.
+function updateNewPlayer(socket) {
+	socket.emit('currentPlayers', players)
+	socket.emit('starLocation', star)
+	socket.emit('scoreUpdate', scores)
+}
+
+// Deletes the player object and informs other players to remove the player
+//  from their game session. 
+function removePlayer(socket) {
+	console.log('userID: ' + socket.id +  ' disconnected')
+	delete players[socket.id]
+	io.emit('disconnect', socket.id)
+}
