@@ -30,7 +30,9 @@ function create() {
     var self = this;
 	this.add.image(400,300,'background');
 	var self = this;
-	this.socket = io();
+    //platforms=this.physics.add.staticGroup();
+    //platforms.create(400,300,'assets/back.jpg').setScale(2).refreshBody();
+    this.socket = io();
 	this.otherPlayers = this.physics.add.group();
 	this.socket.on('currentPlayers', function (players) {
 		Object.keys(players).forEach(function (id) {
@@ -99,7 +101,7 @@ function update() {
         } else if(this.cursors.down.isDown){ 
             this.ship.setVelocityY(160);
         } else {
-			this.ship.setAcceleration(0);
+			this.ship.setVelocityY(0);
 		}
         //	this.physics.world.wrap(this.ship, 5); 
 		
@@ -133,6 +135,8 @@ function addPlayer(self, playerInfo) {
     self.ship.body.setCollideWorldBounds(true);
     self.ship.onWorldBounds=true;
     self.ship.setBounce(0.1,0.1);
+    // self.ship.body.setGravityY(300);
+    self.ship.add.collider(playerInfo,platforms);
 }
 
 function addOtherPlayers(self, playerInfo) {
