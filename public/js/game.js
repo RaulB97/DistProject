@@ -28,11 +28,19 @@ function preload() {
 	this.load.image('background', 'assets/sky.png'); //changed from back.jpg
 	this.load.image('ground', 'assets/platform.png');
 	this.load.image('hero_jump', 'assets/jump.png');
+	this.load.image('hero_jump_left', 'assets/jump_left.png');
 	this.load.spritesheet('hero', "assets/spritesheets/hero.png", {
 		frameWidth: 19,
 		frameHeight: 34
 	})
+	this.load.spritesheet('hero_left', "assets/spritesheets/hero_left.png", {
+		frameWidth: 19,
+		frameHeight: 34
+	})
 	this.load.spritesheet('hero_run', "assets/spritesheets/hero_run.png", {
+		frameWidth: 21, frameHeight: 34
+	})
+	this.load.spritesheet('hero_run_left', "assets/spritesheets/hero_run_left.png", {
 		frameWidth: 21, frameHeight: 34
 	})
 	// using another spritesheet just to test.
@@ -55,7 +63,7 @@ function create() {
 
 	this.anims.create({
 		key: 'left',
-		frames: this.anims.generateFrameNumbers('hero_run', { start: 0, end: 7 }),
+		frames: this.anims.generateFrameNumbers('hero_run_left', { start: 0, end: 7 }),
 		frameRate: 10,
 		repeat: -1
 	});
@@ -63,6 +71,13 @@ function create() {
 	this.anims.create({
 		key: 'idle',
 		frames: this.anims.generateFrameNumbers('hero', { start: 0, end: 11}),
+		frameRate: 20,
+		repeat: -1
+	});
+
+	this.anims.create({
+		key: 'idle_left',
+		frames: this.anims.generateFrameNumbers('hero_left', { start: 0, end: 11}),
 		frameRate: 20,
 		repeat: -1
 	});
@@ -80,6 +95,11 @@ function create() {
 		frameRate: 20
 	})
 	
+	this.anims.create({
+		key: 'jump_left',
+		frames: [ { key: 'hero_jump_left'} ],
+		frameRate: 20
+	})
 
 	var self = this;
 	this.socket = io();
@@ -134,28 +154,41 @@ function create() {
 }
 
 
+var direction = true;
 function update() {
 	if (this.hero) {
         if (this.cursors.left.isDown) {
 			//this.hero.scaleX *= -1;
 			this.hero.setVelocityX(-160);
 			this.hero.anims.play('left', true);
+			direction = false;
 			
 		} else if (this.cursors.right.isDown) {
 			this.hero.setVelocityX(160);
 			this.hero.anims.play('right', true);
+			direction = true;
 			
 		} else {
-			this.hero.setVelocityX(0);
-			this.hero.anims.play('idle', true);
+			if (direction) {
+				this.hero.setVelocityX(0);
+				this.hero.anims.play('idle', true);
+			} else {
+				this.hero.setVelocityX(0);
+				this.hero.anims.play('idle_left', true);
+			}
 
 			
 		}
 
 		if (this.cursors.up.isDown) {
-            //this.physics.velocityFromRotation(this.ship.rotation + 1.5, 100, this.ship.body.acceleration);
-			this.hero.setVelocityY(-160);
-			this.hero.play('jump', true);
+			//this.physics.velocityFromRotation(this.ship.rotation + 1.5, 100, this.ship.body.acceleration);
+			if (direction) {
+				this.hero.setVelocityY(-160);
+				this.hero.play('jump', true);
+			} else {
+				this.hero.setVelocityY(-160);
+				this.hero.play('jump_left', true);
+			}
         } else if(this.cursors.down.isDown){ 
 			this.hero.setVelocityY(160);
 			
