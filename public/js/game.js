@@ -27,9 +27,13 @@ function preload() {
 	this.load.image('star', 'assets/star_gold.png');
 	this.load.image('background', 'assets/sky.png'); //changed from back.jpg
 	this.load.image('ground', 'assets/platform.png');
+	this.load.image('hero_jump', 'assets/jump.png');
 	this.load.spritesheet('hero', "assets/spritesheets/hero.png", {
 		frameWidth: 19,
 		frameHeight: 34
+	})
+	this.load.spritesheet('hero_run', "assets/spritesheets/hero_run.png", {
+		frameWidth: 21, frameHeight: 34
 	})
 	// using another spritesheet just to test.
 	this.load.spritesheet('dude', 
@@ -46,28 +50,35 @@ function create() {
 	platforms.create(600, 400, 'ground');
     platforms.create(50, 250, 'ground');
     platforms.create(750, 220, 'ground');
-    platforms.create(400, 568, 'ground').setScale(2);
+    platforms.create(400, 584, 'ground');
 
 
 	this.anims.create({
 		key: 'left',
-		frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+		frames: this.anims.generateFrameNumbers('hero_run', { start: 0, end: 7 }),
 		frameRate: 10,
 		repeat: -1
 	});
 
 	this.anims.create({
-		key: 'turn',
-		frames: [ { key: 'dude', frame: 4 } ],
-		frameRate: 20
+		key: 'idle',
+		frames: this.anims.generateFrameNumbers('hero', { start: 0, end: 11}),
+		frameRate: 20,
+		repeat: -1
 	});
 
 	this.anims.create({
 		key: 'right',
-		frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+		frames: this.anims.generateFrameNumbers('hero_run', { start: 0, end: 7 }),
 		frameRate: 10,
 		repeat: -1
 	});
+
+	this.anims.create({
+		key: 'jump',
+		frames: [ { key: 'hero_jump'} ],
+		frameRate: 20
+	})
 	
 
 	var self = this;
@@ -126,6 +137,7 @@ function create() {
 function update() {
 	if (this.hero) {
         if (this.cursors.left.isDown) {
+			//this.hero.scaleX *= -1;
 			this.hero.setVelocityX(-160);
 			this.hero.anims.play('left', true);
 			
@@ -135,7 +147,7 @@ function update() {
 			
 		} else {
 			this.hero.setVelocityX(0);
-			this.hero.anims.play('turn', true);
+			this.hero.anims.play('idle', true);
 
 			
 		}
@@ -143,6 +155,7 @@ function update() {
 		if (this.cursors.up.isDown) {
             //this.physics.velocityFromRotation(this.ship.rotation + 1.5, 100, this.ship.body.acceleration);
 			this.hero.setVelocityY(-160);
+			this.hero.play('jump', true);
         } else if(this.cursors.down.isDown){ 
 			this.hero.setVelocityY(160);
 			
@@ -171,7 +184,7 @@ function update() {
 
 function addPlayer(self, playerInfo) {
 	// Make sure setDisplaySize matches sprite size.
-	self.hero= self.physics.add.sprite(playerInfo.x, playerInfo.y, 'dude').setOrigin(0.5, 0.5).setDisplaySize(30, 34).setGravityY(1500);
+	self.hero= self.physics.add.sprite(playerInfo.x, playerInfo.y, 'hero').setOrigin(0.5, 0.5).setDisplaySize(24, 39).setGravityY(1500);
 	if (playerInfo.team === 'blue') {
 		self.hero.setTint(0x0000ff);
 	} else {
@@ -183,14 +196,13 @@ function addPlayer(self, playerInfo) {
     self.hero.setMaxVelocity(200);
     self.hero.body.setCollideWorldBounds(true);
     self.hero.onWorldBounds=true;
-	self.hero.setBounce(0.1,0.1);
-
+	self.hero.setBounce(0.2);
 	
 }
 
 function addOtherPlayers(self, playerInfo) {
 	//const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-	const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'dude').setOrigin(0.5, 0.5).setDisplaySize(30, 34);
+	const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'hero').setOrigin(0.5, 0.5).setDisplaySize(24, 39);
 	
 	if (playerInfo.team === 'blue') {
 		otherPlayer.setTint(0x0000ff);
