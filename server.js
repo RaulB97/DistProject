@@ -1,12 +1,12 @@
-var express= require('express');
+var express = require('express');
 var app = express()
 var server = require('http').Server(app)
 var io = require('socket.io').listen(server)
 
 var players = {}
 var star = {
-	x: Math.floor(Math.random() * 700) + 50,
-	y: Math.floor(Math.random() * 500) + 50
+	x: 350,
+	y: 250
 }
 var scores = {
 	blue: 0,
@@ -58,8 +58,35 @@ io.on('connection', function (socket) {
 		} else {
 			scores.blue += 10;
 		}
-		star.x = Math.floor(Math.random() * 700) + 50;
-		star.y = Math.floor(Math.random() * 500) + 50;
+		// star.x = Math.floor(Math.random() * 700) + 50;
+		// star.y = Math.floor(Math.random() * 500) + 50;
+		pos = Math.floor((Math.random() * 6));
+		switch (pos) {
+			case 0:
+				star.x = 400;
+				star.y = 400;
+				break;
+			case 1:
+				star.x =550;
+				star.y = 300;
+				break;
+			case 2:
+				star.x = 100;
+				star.y = 200;
+				break;
+			case 3:
+				star.x =350;
+				star.y = 250;
+				break;
+			case 4:
+				star.x =540;
+				star.y = 150;
+				break;
+			case 5:
+				star.x =250;
+				star.y = 100;
+				break;
+		}
 		io.emit('starLocation', star);
 		io.emit('scoreUpdate', scores);
 	})
@@ -88,7 +115,7 @@ function updateNewPlayer(socket) {
 // Deletes the player object and informs other players to remove the player
 //  from their game session. 
 function removePlayer(socket) {
-	console.log('userID: ' + socket.id +  ' disconnected')
+	console.log('userID: ' + socket.id + ' disconnected')
 	delete players[socket.id]
 	io.emit('disconnect', socket.id)
 }

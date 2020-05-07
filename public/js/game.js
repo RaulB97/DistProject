@@ -1,12 +1,12 @@
 var config = {
   type: Phaser.AUTO,
   parent: 'phaser-example',
-  width: 800,
-  height: 600,
+  width: 640,
+  height: 480,
   physics: {
     default: 'arcade',
     arcade: {
-      debug: true,
+      debug: false,
       //gravity: { y: 0 }
     }
   },
@@ -25,8 +25,9 @@ function preload() {
 	this.load.image('ship', 'assets/spaceShips_001.png');
 	this.load.image('otherPlayer', 'assets/enemyBlack5.png');
 	this.load.image('star', 'assets/star_gold.png');
-	this.load.image('background', 'assets/sky.png'); //changed from back.jpg
-	this.load.image('ground', 'assets/platform.png');
+	this.load.image('background', 'assets/nice_sky.png'); //changed from back.jpg
+	this.load.image('ground', 'assets/grass_plat.png');
+	this.load.image('snow_plat', 'assets/snow_plat.png');
 	this.load.image('hero_jump', 'assets/jump.png');
 	this.load.image('hero_jump_left', 'assets/jump_left.png');
 	this.load.spritesheet('hero', "assets/spritesheets/hero.png", {
@@ -52,13 +53,16 @@ function preload() {
  
 // Used to create game objects.
 function create() {
-	this.add.image(400,300,'background');
+	this.add.image(320,240,'background');
 
 	platforms = this.physics.add.staticGroup();
-	platforms.create(600, 400, 'ground');
-    platforms.create(50, 250, 'ground');
-    platforms.create(750, 220, 'ground');
-    platforms.create(400, 584, 'ground');
+	platforms.create(250, 150, 'snow_plat');
+	platforms.create(540, 200, 'snow_plat');
+	platforms.create(350, 300, 'ground');
+	platforms.create(100, 250, 'snow_plat');
+	platforms.create(550, 350, 'ground');
+	// Bottom grass plot.
+    platforms.create(400, 450, 'ground');
 
 
 	this.anims.create({
@@ -137,7 +141,7 @@ function create() {
 	this.cursors = this.input.keyboard.createCursorKeys();
 
 	this.blueScoreText = this.add.text(16, 16, '', { fontSize: '32px', fill: '#0000FF' });
-	this.redScoreText = this.add.text(584, 16, '', { fontSize: '32px', fill: '#FF0000' });
+	this.redScoreText = this.add.text(500, 16, '', { fontSize: '32px', fill: '#FF0000' });
   
 	this.socket.on('scoreUpdate', function (scores) {
 		self.blueScoreText.setText('Blue: ' + scores.blue);
