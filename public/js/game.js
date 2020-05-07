@@ -77,7 +77,7 @@ function create() {
 
 	this.anims.create({
 		key: 'idle_left',
-		frames: this.anims.generateFrameNumbers('hero_left', { start: 0, end: 11}),
+		frames: this.anims.generateFrameNumbers('hero_left', { start: 0, end: 9}),
 		frameRate: 20,
 		repeat: -1
 	});
