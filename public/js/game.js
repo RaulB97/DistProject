@@ -18,24 +18,58 @@ var config = {
 };
  
 var game = new Phaser.Game(config);
+var platforms;
+var player;
  
 function preload() {
 	this.load.image('ship', 'assets/spaceShips_001.png');
 	this.load.image('otherPlayer', 'assets/enemyBlack5.png');
 	this.load.image('star', 'assets/star_gold.png');
-	this.load.image('background', 'assets/back.jpg');
-	this.load.spritesheet("hero", "assets/spritesheets/hero.png", {
+	this.load.image('background', 'assets/sky.png'); //changed from back.jpg
+	this.load.image('ground', 'assets/platform.png');
+	this.load.spritesheet('hero', "assets/spritesheets/hero.png", {
 		frameWidth: 19,
 		frameHeight: 34
 	})
+	// using another spritesheet just to test.
+	this.load.spritesheet('dude', 
+        'assets/dude.png',
+		{ frameWidth: 32, frameHeight: 48 }
+	);
 }
  
 // Used to create game objects.
 function create() {
-	//let playah = this.physics.add.sprite(20,0, "ship");
-	//playah.setGravityY(20);
 	this.add.image(400,300,'background');
-	// self is used to pass this into functions. Due to scope concerns?
+
+	platforms = this.physics.add.staticGroup();
+	platforms.create(600, 400, 'ground');
+    platforms.create(50, 250, 'ground');
+    platforms.create(750, 220, 'ground');
+    platforms.create(400, 568, 'ground').setScale(2);
+
+
+	this.anims.create({
+		key: 'left',
+		frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+		frameRate: 10,
+		repeat: -1
+	});
+
+	this.anims.create({
+		key: 'turn',
+		frames: [ { key: 'dude', frame: 4 } ],
+		frameRate: 20
+	});
+
+	this.anims.create({
+		key: 'right',
+		frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+		frameRate: 10,
+		repeat: -1
+	});
+	
+
 	var self = this;
 	this.socket = io();
 	// Does group() create an 'array' type structure?
@@ -85,31 +119,37 @@ function create() {
 		  this.socket.emit('starCollected');
 		}, null, self);
 	});
+
 }
 
 
 function update() {
 	if (this.hero) {
         if (this.cursors.left.isDown) {
-            // this.ship.setAngularVelocity(-150);
-            this.hero.setVelocityX(-160);
+			this.hero.setVelocityX(-160);
+			this.hero.anims.play('left', true);
+			
 		} else if (this.cursors.right.isDown) {
-            //this.ship.setAngularVelocity(150);
-            this.hero.setVelocityX(160);
+			this.hero.setVelocityX(160);
+			this.hero.anims.play('right', true);
+			
 		} else {
-            //this.ship.setAngularVelocity(0);
-            this.hero.setVelocityX(0);
+			this.hero.setVelocityX(0);
+			this.hero.anims.play('turn', true);
+
+			
 		}
 
 		if (this.cursors.up.isDown) {
             //this.physics.velocityFromRotation(this.ship.rotation + 1.5, 100, this.ship.body.acceleration);
-            this.hero.setVelocityY(-160);
+			this.hero.setVelocityY(-160);
         } else if(this.cursors.down.isDown){ 
-            this.hero.setVelocityY(160);
+			this.hero.setVelocityY(160);
+			
         } else {
 			this.hero.setAcceleration(0);
+
 		}
-        //	this.physics.world.wrap(this.ship, 5); 
 
 		// emit player movement
 		var x = this.hero.x;
@@ -118,40 +158,40 @@ function update() {
 		if (this.hero.oldPosition && (x !== this.hero.oldPosition.x || y !== this.hero.oldPosition.y || r !== this.hero.oldPosition.rotation)) {
 			this.socket.emit('playerMovement', { x: this.hero.x, y: this.hero.y, rotation: this.hero.rotation });
 		}
-
+	
 		// save old position data
 		this.hero.oldPosition = {
 			x: this.hero.x,
 			y: this.hero.y,
 			rotation: this.hero.rotation
 		};
+	
 	}
 }
 
 function addPlayer(self, playerInfo) {
 	// Make sure setDisplaySize matches sprite size.
-	self.hero= self.physics.add.sprite(playerInfo.x, playerInfo.y, 'hero').setOrigin(0.5, 0.5).setDisplaySize(19, 34);
+	self.hero= self.physics.add.sprite(playerInfo.x, playerInfo.y, 'dude').setOrigin(0.5, 0.5).setDisplaySize(30, 34).setGravityY(1500);
 	if (playerInfo.team === 'blue') {
 		self.hero.setTint(0x0000ff);
 	} else {
 		self.hero.setTint(0xff0000);
 	}
+	self.physics.add.collider(self.hero, platforms);
 	self.hero.setDrag(100);
 	self.hero.setAngularDrag(100);
     self.hero.setMaxVelocity(200);
     self.hero.body.setCollideWorldBounds(true);
     self.hero.onWorldBounds=true;
-    self.hero.setBounce(0.1,0.1);
+	self.hero.setBounce(0.1,0.1);
+
+	
 }
 
 function addOtherPlayers(self, playerInfo) {
-	const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
-	this.anims.create({
-		key: "hero_anim",
-		frames: this.anims.generateFrameNumbers("hero"),
-		frameRate: 60,
-		repeat: -1
-	})
+	//const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'otherPlayer').setOrigin(0.5, 0.5).setDisplaySize(53, 40);
+	const otherPlayer = self.add.sprite(playerInfo.x, playerInfo.y, 'dude').setOrigin(0.5, 0.5).setDisplaySize(30, 34);
+	
 	if (playerInfo.team === 'blue') {
 		otherPlayer.setTint(0x0000ff);
 	} else {
